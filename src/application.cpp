@@ -562,7 +562,7 @@ void Application::mouse_event(int key, int event, unsigned char mods) {
 void Application::char_event(unsigned int codepoint) {
   bool queued = false;
 
-  switch_modes(codepoint);
+  // switch_modes(codepoint);
 
   switch (mode) {
     case RENDER_MODE:
