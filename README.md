@@ -35,11 +35,11 @@ When you have successfully built your code, you should get an executable named `
 | `l` then `0--9`       | **l**oad scene from numbered buffer                |
 
 ## Evaluation
-For this assignment, you will implement methods in meshEdit.cpp.
+For this assignment, you will implement methods in `meshEdit.cpp`.
 
-The User Guide on the wiki describes a large number of features that are in principle available in MeshEdit mode. You do not have to implement all of these features to receive full credit on the assignment! However, you do have to successfully implement a subset of the features. Implementing additional features beyond the required subset will earn you extra credit points.
+The [User Guide](https://github.com/stanford-cs248/triangle-mesh-editor/wiki) on the wiki describes a large number of features that are potentially available in MeshEdit mode. You do not have to implement all of these features to receive full credit on the assignment! However, you do have to successfully implement a subset of the features. Implementing additional features beyond the required subset will earn you extra credit points.
 
-The particular requirements and functions that you have to implement, are:
+The particular requirements and functions that you have to implement are:
 
 ### 1. EdgeSplit and EdgeFlip
 
@@ -65,6 +65,8 @@ Every team is required to submit a 3D model created from cube.dae using their im
 **You may have to implement at least one bevel operation (we found FaceBevel most useful) in extra credit to do this part!**
 
 Include this model in the root directory of your submission as `model.dae`.
+
+__Note: the course staff will 3D print our three favorite models as a reward for making something cool!__
 
 ### Extra Credit
 
@@ -101,4 +103,4 @@ We are using [Canvas](https://canvas.stanford.edu) as our submission tool. You s
 
 ## Acknowledgement
 
-CS248 course staff would like to thank Professor Keenan Crane and Carnegie Mellon University's course assistants for providing assignment materials.
+CS248 course staff would like to thank Professor Keenan Crane and his course assistants for the initial development of assignment materials.
