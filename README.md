@@ -41,12 +41,12 @@ The User Guide on the wiki describes a large number of features that are in prin
 
 The particular requirements, functions that you have to implement, and the percentage of the grade they correspond to, are:
 
-### 1. EdgeSplit and EdgeFlip (20%)
+### 1. EdgeSplit and EdgeFlip
 
  - splitEdge()
  - flipEdge()
  
-### 2. LinearSubdivision and 3. CatmullClarkSubdivision (20% each)
+### 2. LinearSubdivision and 3. CatmullClarkSubdivision
 
  - subdivideQuad()
  - computeLinearSubdivisionPositions()
@@ -55,13 +55,13 @@ The particular requirements, functions that you have to implement, and the perce
  - buildSubdivisionVertexList()
  - buildSubdivisionFaceList()
  
-### 4. LoopSubdivision (20%)
+### 4. LoopSubdivision
 
  - upsample()
  
-### 5. Create one beautiful 3D model using Cardinal3D (20%)
+### 5. Create one beautiful 3D model using Cardinal3D
 
-Every team is required to submit a 3D model created from cube.dae using their implementation of Cardinal3D, which will be automatically entered into a class-wide 3D modeling competition. Models will be critiqued and evaluated based on both technical sophistication and aesthetic beauty. Note: Use of any other 3D package (e.g., free or commercial 3D modelers like Maya or Blender) is strictly prohibited! This model must be created by opening cube.dae, applying the operations implemented as part of the assignment, and saving the result.
+Every team is required to submit a 3D model created from cube.dae using their implementation of Cardinal3D. Models will be critiqued and evaluated based on both technical sophistication and aesthetic beauty. Note: Use of any other 3D package (e.g., free or commercial 3D modelers like Maya or Blender) is strictly prohibited! This model must be created by opening cube.dae, applying the operations implemented as part of the assignment, and saving the result.
 **You may have to implement at least one bevel operation (we found FaceBevel most useful) in extra credit to do this part!**
 
 Include this model in the root directory of your submission as `model.dae`.
