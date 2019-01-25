@@ -39,7 +39,7 @@ For this assignment, you will implement methods in meshEdit.cpp.
 
 The User Guide on the wiki describes a large number of features that are in principle available in MeshEdit mode. You do not have to implement all of these features to receive full credit on the assignment! However, you do have to successfully implement a subset of the features. Implementing additional features beyond the required subset will earn you extra credit points.
 
-The particular requirements, functions that you have to implement, and the percentage of the grade they correspond to, are:
+The particular requirements and functions that you have to implement, are:
 
 ### 1. EdgeSplit and EdgeFlip
 
@@ -89,14 +89,12 @@ The global operations, and their dependency on local operations, are as follows:
  - IsotropicRemeshing - depends on EdgeSplit, EdgeFlip, and EdgeCollapse
  - Simplification - depends on EdgeCollapse
  
-Each additional local operation beyond the requirements will be worth 2.5% of the assignment grade; each additional global operation will be worth 5% of the assignment grade. The maximum possible grade on the assignment is 120%. You need to specify clearly what you implemented in your writeup.
+You will need to specify clearly what you implemented in your writeup.
 
 ## Writeup
 Additionally, you will submit a short document with your SuNET ID's, explaining what you have implemented (possibly including extra credit), and any particular details of your submission. If your submission includes any implementations which are not entirely functional, please detail what works and what doesn't, along with where you got stuck. This document does not need to be long; correctly implemented features may simply be listed, and incomplete features should be described in a few sentences at most.
 
 The writeup must be a pdf, markdown, or plaintext file. Include it in the root directory of your submission as writeup.pdf, writeup.md, or writeup.txt.
-
-Failure to submit this writeup will incur a penalty on the assignment.
 
 ## Submission Instructions
 We are using [Canvas](https://canvas.stanford.edu) as our submission tool. You should create and upload a zipped folder of your entire `/src` subdirectory along with the writeup (e.g. writeup.txt) and 3D modeling submission (`model.dae`). Do not include your build subdirectory. You may work in teams of up to two people. If working in a team, please have only one person make the submission.
