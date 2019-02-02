@@ -59,8 +59,117 @@ EdgeIter HalfedgeMesh::flipEdge(EdgeIter e0) {
   // This method should flip the given edge and return an iterator to the
   // flipped edge.
 
-  showError("flipEdge() not implemented.");
-  return EdgeIter();
+  // showError("flipEdge() not implemented.");
+
+  // If the edge is on the boundary of the mesh, do nothing
+  if (e0->isBoundary())
+    return e0;
+
+  // Gather the halfedges
+  HalfedgeIter h4 = e0->halfedge();
+  HalfedgeIter h1 = h4->next();
+  HalfedgeIter h0 = h1->twin();
+  HalfedgeIter h2 = h1->next();
+  HalfedgeIter h3 = h2->twin();
+  HalfedgeIter h5 = h4->twin();
+  HalfedgeIter h8 = h5->next();
+  HalfedgeIter h9 = h8->twin();
+  HalfedgeIter h7 = h8->next();
+  HalfedgeIter h6 = h7->twin();
+
+  // Gather the vertices
+  VertexIter v0 = h2->vertex();
+  VertexIter v1 = h6->vertex();
+  VertexIter v2 = h8->vertex();
+  VertexIter v3 = h9->vertex();
+
+  // Gather the edges
+  EdgeIter e1 = h1->edge();
+  EdgeIter e2 = h2->edge();
+  EdgeIter e3 = h7->edge();
+  EdgeIter e4 = h8->edge();
+
+  // Gather the faces
+  FaceIter f0 = h1->face();
+  FaceIter f1 = h7->face();
+
+  // Allocate new elements.
+  h0->next() = h0->next();
+  h0->twin() = h1;
+  h0->vertex() = v0;
+  h0->edge() = e1;
+  h0->face() = h0->face();
+
+  h1->next() = h4;
+  h1->twin() = h0;
+  h1->vertex() = v1;
+  h1->edge() = e1;
+  h1->face() = f0;
+
+  h2->next() = h8;
+  h2->twin() = h3;
+  h2->vertex() = v0;
+  h2->edge() = e2;
+  h2->face() = f1;
+
+  h3->next() = h3->next();
+  h3->twin() = h2;
+  h3->vertex() = v2;
+  h3->edge() = e2;
+  h3->face() = h3->face();
+
+  h4->next() = h7;
+  h4->twin() = h5;
+  h4->vertex() = v0;
+  h4->edge() = e0;
+  h4->face() = f0;
+
+  h5->next() = h2;
+  h5->twin() = h4;
+  h5->vertex() = v3;
+  h5->edge() = e0;
+  h5->face() = f1;
+
+  h6->next() = h6->next();
+  h6->twin() = h7;
+  h6->vertex() = v1;
+  h6->edge() = e3;
+  h6->face() = h6->face();
+
+  h7->next() = h1;
+  h7->twin() = h6;
+  h7->vertex() = v3;
+  h7->edge() = e3;
+  h7->face() = f0;
+
+  h8->next() = h5;
+  h8->twin() = h9;
+  h8->vertex() = v2;
+  h8->edge() = e4;
+  h8->face() = f1;
+
+  h9->next() = h9->next();
+  h9->twin() = h8;
+  h9->vertex() = v3;
+  h9->edge() = e4;
+  h9->face() = h9->face();
+
+  v0->halfedge() = h0;
+  v1->halfedge() = h6;
+  v2->halfedge() = h3;
+  v3->halfedge() = h9;
+
+  e0->halfedge() = h4;
+  e1->halfedge() = h1;
+  e2->halfedge() = h2;
+  e3->halfedge() = h7;
+  e4->halfedge() = h8;
+
+  f0->halfedge() = h1;
+  f1->halfedge() = h2;
+
+
+  return e0;
 }
 
 void HalfedgeMesh::subdivideQuad(bool useCatmullClark) {
@@ -369,7 +478,7 @@ void HalfedgeMesh::splitPolygons(vector<FaceIter>& fcs) {
 
 void HalfedgeMesh::splitPolygon(FaceIter f) {
   // *** Extra Credit ***
-  // TODO: (meshedit) 
+  // TODO: (meshedit)
   // Triangulate a polygonal face
   showError("splitPolygon() not implemented.");
 }
