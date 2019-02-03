@@ -411,13 +411,24 @@ void HalfedgeMesh::computeCatmullClarkPositions() {
 void HalfedgeMesh::assignSubdivisionIndices() {
   // TODO Start a counter at zero; if you like, you can use the
   // "Index" type (defined in halfedgeMesh.h)
+  Index counter = 0;
 
   // TODO Iterate over vertices, assigning values to Vertex::index
+  for (auto it = verticesBegin(); it != verticesEnd(); it++) {
+    it->index = counter++;
+  }
 
   // TODO Iterate over edges, assigning values to Edge::index
+  for (auto it = edgesBegin(); it != edgesEnd(); it++) {
+    it->index = counter++;
+  }
 
   // TODO Iterate over faces, assigning values to Face::index
-  showError("assignSubdivisionIndices() not implemented.");
+  for (auto it = facesBegin(); it != facesEnd(); it++) {
+    it->index = counter++;
+  }
+
+  // showError("assignSubdivisionIndices() not implemented.");
 }
 
 /**
@@ -432,13 +443,23 @@ void HalfedgeMesh::buildSubdivisionVertexList(vector<Vector3D>& subDVertices) {
 
   // TODO Iterate over vertices, assigning Vertex::newPosition to the
   // appropriate location in the new vertex list.
+  for (auto it = verticesBegin(); it != verticesEnd(); it++) {
+    subDVertices.push_back(it->newPosition);
+  }
 
   // TODO Iterate over edges, assigning Edge::newPosition to the appropriate
   // location in the new vertex list.
+  for (auto it = edgesBegin(); it != edgesEnd(); it++) {
+    subDVertices.push_back(it->newPosition);
+  }
 
   // TODO Iterate over faces, assigning Face::newPosition to the appropriate
   // location in the new vertex list.
-  showError("buildSubdivisionVertexList() not implemented.");
+  for (auto it = facesBegin(); it != facesEnd(); it++) {
+    subDVertices.push_back(it->newPosition);
+  }
+
+  // showError("buildSubdivisionVertexList() not implemented.");
 }
 
 /**
@@ -471,7 +492,20 @@ void HalfedgeMesh::buildSubdivisionFaceList(vector<vector<Index> >& subDFaces) {
   // TODO loop around face
   // TODO build lists of four indices for each sub-quad
   // TODO append each list of four indices to face list
-  showError("buildSubdivisionFaceList() not implemented.");
+  for (auto it = facesBegin(); it != facesEnd(); it++) {
+    HalfedgeIter he = it->halfedge();
+    do {
+      vector<Index> indexList(4);
+      indexList[0] = he->edge()->index;
+      indexList[1] = he->next()->vertex()->index;
+      indexList[2] = he->next()->edge()->index;
+      indexList[3] = it->index;
+      he = he->next();
+      subDFaces.push_back(indexList);
+    } while (he != it->halfedge());
+  }
+
+  // showError("buildSubdivisionFaceList() not implemented.");
 }
 
 FaceIter HalfedgeMesh::bevelVertex(VertexIter v) {
