@@ -413,7 +413,7 @@ void HalfedgeMesh::computeCatmullClarkPositions() {
     Vector3D R;
     do {
       Q += he->face()->newPosition;
-      R += he->edge()->newPosition;
+      R += he->edge()->centroid();
       he = he->twin()->next();
     } while (he != vit->halfedge());
     Size n = vit->degree();
