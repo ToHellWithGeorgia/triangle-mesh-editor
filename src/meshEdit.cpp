@@ -395,11 +395,31 @@ void HalfedgeMesh::computeCatmullClarkPositions() {
   // rules. (These rules are outlined in the Developer Manual.)
 
   // TODO face
+  for (auto fit = facesBegin(); fit != facesEnd(); fit++) {
+    fit->newPosition = fit->centroid();
+  }
 
   // TODO edges
+  for (auto eit = edgesBegin(); eit != edgesEnd(); eit++) {
+    eit->newPosition = (eit->centroid() * 2 +
+      eit->halfedge()->face()->newPosition +
+      eit->halfedge()->twin()->face()->newPosition) / 4;
+  }
 
   // TODO vertices
-  showError("computeCatmullClarkPositions() not implemented.");
+  for (auto vit = verticesBegin(); vit != verticesEnd(); vit++) {
+    HalfedgeIter he = vit->halfedge();
+    Vector3D Q;
+    Vector3D R;
+    do {
+      Q += he->face()->newPosition;
+      R += he->edge()->newPosition;
+      he = he->twin()->next();
+    } while (he != vit->halfedge());
+    Size n = vit->degree();
+    vit->newPosition = (Q / n + 2 * R / n + (n - 3) * vit->position) / n;
+  }
+  // showError("computeCatmullClarkPositions() not implemented.");
 }
 
 /**
