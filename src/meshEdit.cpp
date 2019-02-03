@@ -11,9 +11,110 @@ VertexIter HalfedgeMesh::splitEdge(EdgeIter e0) {
   // This method should split the given edge and return an iterator to the
   // newly inserted vertex. The halfedge of this vertex should point along
   // the edge that was split, rather than the new edges.
+  // Gather the halfedges
+  if(e0->isBoundary()) {
+    return e0->halfedge()->vertex();
+  }
 
-  showError("splitEdge() not implemented.");
-  return VertexIter();
+  HalfedgeIter h4 = e0->halfedge();
+  HalfedgeIter h1 = h4->next();
+  HalfedgeIter h0 = h1->twin();
+  HalfedgeIter h2 = h1->next();
+  HalfedgeIter h3 = h2->twin();
+  HalfedgeIter h5 = h4->twin();
+  HalfedgeIter h8 = h5->next();
+  HalfedgeIter h9 = h8->twin();
+  HalfedgeIter h7 = h8->next();
+  HalfedgeIter h6 = h7->twin();
+
+  // Gather the vertices
+  VertexIter v0 = h2->vertex();
+  VertexIter v1 = h6->vertex();
+  VertexIter v2 = h8->vertex();
+  VertexIter v3 = h9->vertex();
+
+  // Gather the edges
+  EdgeIter e1 = h1->edge();
+  EdgeIter e2 = h2->edge();
+  EdgeIter e3 = h7->edge();
+  EdgeIter e4 = h8->edge();
+
+  // Gather the faces
+  FaceIter f0 = h1->face();
+  FaceIter f1 = h7->face();
+
+  // Allocate new vertex.
+  VertexIter nv = newVertex();
+
+  // Allocate new edges.
+  std::vector<EdgeIter> ne;
+  for (int i = 0; i < 4; i++){
+    ne.push_back(newEdge());
+  }
+
+  // Allocate new faces
+  std::vector<FaceIter> nf;
+  for (int i = 0; i < 4; i++){
+    nf.push_back(newFace());
+  }
+
+  // Allocate new HalfEdges.
+  std::vector<HalfedgeIter> nh;
+  for (int i = 0; i < 8; i++){
+    nh.push_back(newHalfedge());
+  }
+
+  // Reassign vertex
+  Vector3D pos = e0->centroid();
+  nv->position = pos;
+
+  // Reassign half edges (next, twin, vertex, edge, face)
+  h1->next() = nh[0];
+  h1->face() = nf[0];
+  h2->next() = nh[4];
+  h2->face() = nf[1];
+  h7->next() = nh[3];
+  h7->face() = nf[2];
+  h8->next() = nh[7];
+  h8->face() = nf[3];
+  nh[0]->setNeighbors(nh[2], nh[1], v0, ne[0], nf[0]);
+  nh[1]->setNeighbors(h2, nh[0], nv, ne[0], nf[1]);
+  nh[2]->setNeighbors(h1, nh[3], nv, ne[1], nf[0]);
+  nh[3]->setNeighbors(nh[6], nh[2], v1, ne[1], nf[2]);
+  nh[4]->setNeighbors(nh[1], nh[5], v2, ne[2], nf[1]);
+  nh[5]->setNeighbors(h8, nh[4], nv, ne[2], nf[3]);
+  nh[6]->setNeighbors(h7, nh[7], nv, ne[3], nf[2]);
+  nh[7]->setNeighbors(nh[5], nh[6], v3, ne[3], nf[3]);
+
+  // Reassign edges
+  ne[0]->halfedge() = nh[0];
+  ne[1]->halfedge() = nh[2];
+  ne[2]->halfedge() = nh[4];
+  ne[3]->halfedge() = nh[6];
+
+  // Reassign faces
+  nf[0]->halfedge() = h1;
+  nf[1]->halfedge() = h2;
+  nf[2]->halfedge() = h7;
+  nf[3]->halfedge() = h8;
+
+  // Reassign vertex
+  v0->halfedge() = nh[0];
+  v1->halfedge() = nh[3];
+  v2->halfedge() = nh[4];
+  v3->halfedge() = nh[7];
+  nv->halfedge() = nh[2];
+
+
+  // Delete unused halfedges, edges, faces
+  deleteHalfedge(h4);
+  deleteHalfedge(h5);
+  deleteEdge(e0);
+  deleteFace(f0);
+  deleteFace(f1);
+
+
+  return nv;
 }
 
 VertexIter HalfedgeMesh::collapseEdge(EdgeIter e) {
