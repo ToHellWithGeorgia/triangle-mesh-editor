@@ -3,6 +3,7 @@
 #include "meshEdit.h"
 #include "mutablePriorityQueue.h"
 #include "error_dialog.h"
+#include <iostream>
 
 namespace CS248 {
 
@@ -12,108 +13,155 @@ VertexIter HalfedgeMesh::splitEdge(EdgeIter e0) {
   // newly inserted vertex. The halfedge of this vertex should point along
   // the edge that was split, rather than the new edges.
   // Gather the halfedges
-  if(e0->isBoundary()) {
-    return e0->halfedge()->vertex();
-  }
 
+  bool isBond = e0->isBoundary();
   HalfedgeIter h4 = e0->halfedge();
   HalfedgeIter h1 = h4->next();
   HalfedgeIter h0 = h1->twin();
   HalfedgeIter h2 = h1->next();
   HalfedgeIter h3 = h2->twin();
   HalfedgeIter h5 = h4->twin();
-  HalfedgeIter h8 = h5->next();
-  HalfedgeIter h9 = h8->twin();
-  HalfedgeIter h7 = h8->next();
-  HalfedgeIter h6 = h7->twin();
+  HalfedgeIter h8;
+  HalfedgeIter h9;
+  HalfedgeIter h7;
+  HalfedgeIter h6;
+  if (!isBond) {
+    h8 = h5->next();
+    h9 = h8->twin();
+    h7 = h8->next();
+    h6 = h7->twin();
+  }
 
   // Gather the vertices
   VertexIter v0 = h2->vertex();
-  VertexIter v1 = h6->vertex();
-  VertexIter v2 = h8->vertex();
-  VertexIter v3 = h9->vertex();
+  VertexIter v1 = h1->vertex();
+  VertexIter v2 = h4->vertex();
+  VertexIter v3;
+  if (!isBond) {
+    v3 = h9->vertex();
+  }
 
   // Gather the edges
   EdgeIter e1 = h1->edge();
   EdgeIter e2 = h2->edge();
-  EdgeIter e3 = h7->edge();
-  EdgeIter e4 = h8->edge();
+  EdgeIter e3;
+  EdgeIter e4;
+  if (!isBond) {
+    e3 = h7->edge();
+    e4 = h8->edge();
+  }
 
   // Gather the faces
   FaceIter f0 = h1->face();
-  FaceIter f1 = h7->face();
+  FaceIter f1;
+  if (!isBond){
+    f1 = h7->face();
+  }
 
   // Allocate new vertex.
   VertexIter nv = newVertex();
 
   // Allocate new edges.
+  int numNewEdge = isBond ? 3 : 4;
   std::vector<EdgeIter> ne;
-  for (int i = 0; i < 4; i++){
+  for (int i = 0; i < numNewEdge; i++){
     ne.push_back(newEdge());
   }
 
   // Allocate new faces
+  int numNewFace = isBond ? 2 : 4;
   std::vector<FaceIter> nf;
-  for (int i = 0; i < 4; i++){
+  for (int i = 0; i < numNewFace; i++){
     nf.push_back(newFace());
   }
 
   // Allocate new HalfEdges.
+  int numNewHalfedge = isBond ? 6 : 8;
   std::vector<HalfedgeIter> nh;
-  for (int i = 0; i < 8; i++){
+  for (int i = 0; i < numNewHalfedge; i++){
     nh.push_back(newHalfedge());
   }
+
 
   // Reassign vertex
   Vector3D pos = e0->centroid();
   nv->position = pos;
+
 
   // Reassign half edges (next, twin, vertex, edge, face)
   h1->next() = nh[0];
   h1->face() = nf[0];
   h2->next() = nh[4];
   h2->face() = nf[1];
-  h7->next() = nh[3];
-  h7->face() = nf[2];
-  h8->next() = nh[7];
-  h8->face() = nf[3];
+  if (!isBond){
+    h7->next() = nh[3];
+    h7->face() = nf[2];
+    h8->next() = nh[7];
+    h8->face() = nf[3];
+  }
   nh[0]->setNeighbors(nh[2], nh[1], v0, ne[0], nf[0]);
   nh[1]->setNeighbors(h2, nh[0], nv, ne[0], nf[1]);
   nh[2]->setNeighbors(h1, nh[3], nv, ne[1], nf[0]);
-  nh[3]->setNeighbors(nh[6], nh[2], v1, ne[1], nf[2]);
+  if (!isBond) {
+    nh[3]->setNeighbors(nh[6], nh[2], v1, ne[1], nf[2]); 
+    nh[5]->setNeighbors(h8, nh[4], nv, ne[2], nf[3]); 
+  }
+  else {
+    nh[3]->setNeighbors(nh[5], nh[2], v1, ne[1], h5->face()); 
+    // std::cout << h5->face()->isBoundary() << std::endl; 
+    nh[5]->setNeighbors(h5->next(), nh[4], nv, ne[2], h5->face()); 
+    h5->face()->halfedge() = nh[5];
+  }
   nh[4]->setNeighbors(nh[1], nh[5], v2, ne[2], nf[1]);
-  nh[5]->setNeighbors(h8, nh[4], nv, ne[2], nf[3]);
-  nh[6]->setNeighbors(h7, nh[7], nv, ne[3], nf[2]);
-  nh[7]->setNeighbors(nh[5], nh[6], v3, ne[3], nf[3]);
-
+  if (!isBond) {
+    nh[6]->setNeighbors(h7, nh[7], nv, ne[3], nf[2]);
+    nh[7]->setNeighbors(nh[5], nh[6], v3, ne[3], nf[3]);
+  }
+  // std::cout << "half dege finished" << std::endl;
   // Reassign edges
   ne[0]->halfedge() = nh[0];
   ne[1]->halfedge() = nh[2];
   ne[2]->halfedge() = nh[4];
-  ne[3]->halfedge() = nh[6];
-
+  if (!isBond) {
+    ne[3]->halfedge() = nh[6];
+  }
+  // std::cout << "dege finished" << std::endl;
   // Reassign faces
   nf[0]->halfedge() = h1;
   nf[1]->halfedge() = h2;
-  nf[2]->halfedge() = h7;
-  nf[3]->halfedge() = h8;
-
+  if (!isBond) {
+    nf[2]->halfedge() = h7;
+    nf[3]->halfedge() = h8;
+  }
+  // std::cout << "face finished" << std::endl;
   // Reassign vertex
   v0->halfedge() = nh[0];
-  v1->halfedge() = nh[3];
-  v2->halfedge() = nh[4];
-  v3->halfedge() = nh[7];
+  v1->halfedge() = h1;
+  v2->halfedge() = h3;
+  if (!isBond) {
+    v3->halfedge() = nh[7];
+  }
   nv->halfedge() = nh[2];
-
+  // std::cout << "vertex finished" << std::endl;
+  if (isBond) {
+    HalfedgeIter temp = nh[2];
+    while (temp->next() != h5) {
+      temp = temp->next()->twin();
+    }
+    temp->next() = nh[3];
+  }
 
   // Delete unused halfedges, edges, faces
   deleteHalfedge(h4);
   deleteHalfedge(h5);
   deleteEdge(e0);
   deleteFace(f0);
-  deleteFace(f1);
+  if (!isBond){
+    deleteFace(f1);
+  }
 
-
+   
+  // std::cout << "delete finished" << std::endl;
   return nv;
 }
 
