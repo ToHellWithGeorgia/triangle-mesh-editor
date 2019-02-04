@@ -18,6 +18,9 @@ VertexIter HalfedgeMesh::splitEdge(EdgeIter e0) {
 
   bool isBond = e0->isBoundary();
   HalfedgeIter h4 = e0->halfedge();
+  if (h4->isBoundary()) {
+    h4 = h4->twin();
+  }
   HalfedgeIter h1 = h4->next();
   HalfedgeIter h0 = h1->twin();
   HalfedgeIter h2 = h1->next();
@@ -69,7 +72,9 @@ VertexIter HalfedgeMesh::splitEdge(EdgeIter e0) {
   std::vector<EdgeIter> ne;
   for (int i = 0; i < numNewEdge; i++){
     ne.push_back(newEdge());
-    ne[i]->isNew = true;
+    if (i != 1 && i != 2) {
+      ne[i]->isNew = true;
+    }
   }
 
   // Allocate new faces
@@ -793,7 +798,7 @@ void MeshResampler::upsample(HalfedgeMesh& mesh)
     }
     it->newPosition = newPos;
   }
-  std::cout << "compute vertex finished" << std::endl;
+  // std::cout << "compute vertex finished" << std::endl;
 
   // Next, we're going to split every edge in the mesh, in any order.  For
   // future
@@ -818,7 +823,7 @@ void MeshResampler::upsample(HalfedgeMesh& mesh)
     }
     it = temp;
   }
-  std::cout << "split finished" << std::endl;
+  // std::cout << "split finished" << std::endl;
 
   // Finally, flip any new edge that connects an old and new vertex.
   for (auto eit = mesh.edgesBegin(); eit != mesh.edgesEnd(); eit++) {
@@ -830,14 +835,14 @@ void MeshResampler::upsample(HalfedgeMesh& mesh)
     }
   }
 
-  std::cout << "flip finished" << std::endl;
+  // std::cout << "flip finished" << std::endl;
   // Copy the updated vertex positions to the subdivided mesh.
   // showError("upsample() not implemented.");
   for (auto vit = mesh.verticesBegin(); vit != mesh.verticesEnd(); vit++) {
     vit->position = vit->newPosition;
   }
 
-  std::cout << "copy finished" << std::endl;
+  // std::cout << "copy finished" << std::endl;
 }
 
 void MeshResampler::downsample(HalfedgeMesh& mesh) {
