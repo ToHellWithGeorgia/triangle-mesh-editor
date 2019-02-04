@@ -449,9 +449,14 @@ void HalfedgeMesh::computeCatmullClarkPositions() {
 
   // TODO edges
   for (auto eit = edgesBegin(); eit != edgesEnd(); eit++) {
-    eit->newPosition = (eit->centroid() * 2 +
-      eit->halfedge()->face()->newPosition +
-      eit->halfedge()->twin()->face()->newPosition) / 4;
+    if (!eit->isBoundary()){
+      eit->newPosition = (eit->centroid() * 2 +
+        eit->halfedge()->face()->newPosition +
+        eit->halfedge()->twin()->face()->newPosition) / 4;
+    }
+    else {
+      eit->newPosition = eit->centroid();
+    }
   }
 
   // TODO vertices
@@ -459,13 +464,22 @@ void HalfedgeMesh::computeCatmullClarkPositions() {
     HalfedgeIter he = vit->halfedge();
     Vector3D Q;
     Vector3D R;
+    Vector3D RBond;
     do {
       Q += he->face()->newPosition;
       R += he->edge()->centroid();
+      if (he->edge()->isBoundary()) {
+        RBond += he->edge()->centroid();
+      }
       he = he->twin()->next();
     } while (he != vit->halfedge());
     Size n = vit->degree();
-    vit->newPosition = (Q / n + 2 * R / n + (n - 3) * vit->position) / n;
+    if (!vit->isBoundary()) {
+      vit->newPosition = (Q / n + 2 * R / n + (n - 3) * vit->position) / n;
+    }
+    else {
+      vit->newPosition = RBond / 8 + vit->position * 3 / 4;
+    }
   }
   // showError("computeCatmullClarkPositions() not implemented.");
 }
