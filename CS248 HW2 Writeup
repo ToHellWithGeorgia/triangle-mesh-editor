@@ -1,0 +1,22 @@
+CS248 HW2 Writeup
+
+Zhihan Jiang - zhihanj
+Wensi Yin - wsyin
+
+Finished tasks:
+
+splitEdge()
+flipEdge()
+subdivideQuad()
+computeLinearSubdivisionPositions()
+computeCatmullClarkPositions()
+assignSubdivisionIndices()
+buildSubdivisionVertexList()
+buildSubdivisionFaceList()
+upsample()
+
+The model can be found in ?????
+
+Extra credit tasks:
+
+eraseVertex()

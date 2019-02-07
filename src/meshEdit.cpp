@@ -198,8 +198,81 @@ FaceIter HalfedgeMesh::eraseVertex(VertexIter v) {
   // TODO: (meshEdit)
   // This method should replace the given vertex and all its neighboring
   // edges and faces with a single face, returning the new face.
+  
+  // Cannot delete vertex on the boundary
+  if (v->isBoundary()) {
+    return FaceIter();
+  }
 
-  return FaceIter();
+  HalfedgeIter hit = v->halfedge();
+  // Start to gather all the delete edges, halfedges and faces
+  std::vector<EdgeIter> all_delete_edges;
+  std::vector<FaceIter> all_faces;
+  std::vector<HalfedgeIter> all_delete_he;
+  std::vector<HalfedgeIter> all_remain_he;
+
+  auto new_face = newFace();
+
+  do {
+    hit = hit->twin();
+    auto inner_hit = hit->next();
+    // Delete the edges that are connected to the vertex
+    all_delete_he.push_back(hit);
+    all_delete_he.push_back(inner_hit);
+    all_delete_edges.push_back(hit->edge());
+    // all_delete_edges.push_back(inner_hit->edge());
+    all_faces.push_back(hit->face());
+
+    // Move the inner edge to the remain edges
+    inner_hit = inner_hit->next();
+
+    // Loop all the halfedges that will remain (not connected to vertex)
+    do {
+      all_remain_he.push_back(inner_hit);
+      inner_hit = inner_hit->next();
+    } while (inner_hit != hit);
+    hit = hit->next();
+
+  } while (hit != v->halfedge());
+
+  // std::cout << "Gather elements complete!" << std::endl;
+  // std::cout << "de_e: " << all_delete_edges.size()
+  //           << " de_f: " << all_faces.size()
+  //           << " de_he: " << all_delete_he.size()
+  //           << " re_he: " << all_remain_he.size() << std::endl;
+
+  // Delete all the stuff
+  for (auto it = all_faces.begin(); it != all_faces.end(); it++) {
+    deleteFace(*it);
+  }
+
+  for (auto it = all_delete_edges.begin(); it != all_delete_edges.end(); it++) {
+    deleteEdge(*it);
+  }
+
+  for (auto it = all_delete_he.begin(); it != all_delete_he.end(); it++) {
+    deleteHalfedge(*it);
+  }
+
+  deleteVertex(v);
+  // std::cout << "Delete complete!" << std::endl;
+
+  // Adjust the halfedges pointed by the vertex
+  for (auto it = all_remain_he.begin(); it != all_remain_he.end(); it++) {
+    (*it)->vertex()->halfedge() = *it;
+  }
+
+  // Adjust the connectivity of the new edge.
+  hit = *(all_remain_he.begin());
+  new_face->halfedge() = hit;
+  do {
+    hit->next() = hit->twin()->vertex()->halfedge();
+    hit->face() = new_face;
+    hit = hit->next();
+  } while (hit != *all_remain_he.begin());
+  
+  // std::cout << "Adjust complete!" << std::endl;
+  return new_face;
 }
 
 FaceIter HalfedgeMesh::eraseEdge(EdgeIter e) {

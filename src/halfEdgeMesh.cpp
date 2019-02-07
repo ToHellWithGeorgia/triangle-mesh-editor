@@ -5,7 +5,7 @@
 
 namespace CS248 {
 
-bool Halfedge::isBoundary()
+bool Halfedge::isBoundary() const
 // returns true if and only if this halfedge is on the boundary
 {
   return face()->isBoundary();

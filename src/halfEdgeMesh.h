@@ -378,7 +378,7 @@ class Halfedge : public HalfedgeElement {
    * Check if the edge is a boundary edge.
    * \return true if yes, false otherwise
    */
-  bool isBoundary();
+  bool isBoundary() const;
 
   /**
    * Gather metadata about this element.
@@ -621,21 +621,17 @@ class Vertex : public HalfedgeElement {
 
     // Iterate over neighbors.
     HalfedgeCIter h = halfedge();
-    if (isBoundary()) {
-      do {
-        Vector3D pj = h->next()->vertex()->position;
-        Vector3D pk = h->next()->next()->vertex()->position;
-        N += cross(pj - pi, pk - pi);
-        h = h->next()->twin();
-      } while (h != halfedge());
-    } else {
-      do {
-        Vector3D pj = h->next()->vertex()->position;
-        Vector3D pk = h->next()->next()->vertex()->position;
-        N += cross(pj - pi, pk - pi);
-        h = h->twin()->next();
-      } while (h != halfedge());
+    if (h->isBoundary()) {
+      h = h->twin()->next();
     }
+    HalfedgeCIter hstart = h;
+    do {
+      Vector3D pj = h->next()->vertex()->position;
+      Vector3D pk = h->next()->next()->vertex()->position;
+      N += cross(pj - pi, pk - pi);
+      h = h->twin()->next();
+      if (h->isBoundary()) h = h->twin()->next();
+    } while (h != hstart);
 
     N.normalize();
 
