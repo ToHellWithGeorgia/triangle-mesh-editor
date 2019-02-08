@@ -199,9 +199,10 @@ FaceIter HalfedgeMesh::eraseVertex(VertexIter v) {
   // This method should replace the given vertex and all its neighboring
   // edges and faces with a single face, returning the new face.
   
-  // Cannot delete vertex on the boundary
+  // Cannot delete vertex on the boundary (or can we?)
+  //
   if (v->isBoundary()) {
-    return FaceIter();
+    return v->halfedge()->face();
   }
 
   HalfedgeIter hit = v->halfedge();
@@ -246,13 +247,18 @@ FaceIter HalfedgeMesh::eraseVertex(VertexIter v) {
     deleteFace(*it);
   }
 
+  // std::cout << "face" << std::endl;
+
   for (auto it = all_delete_edges.begin(); it != all_delete_edges.end(); it++) {
     deleteEdge(*it);
   }
 
+  // std::cout << "edge" << std::endl;
+
   for (auto it = all_delete_he.begin(); it != all_delete_he.end(); it++) {
     deleteHalfedge(*it);
   }
+  // std::cout << "he" << std::endl;
 
   deleteVertex(v);
   // std::cout << "Delete complete!" << std::endl;
@@ -790,7 +796,107 @@ void HalfedgeMesh::splitPolygon(FaceIter f) {
   // *** Extra Credit ***
   // TODO: (meshedit)
   // Triangulate a polygonal face
-  showError("splitPolygon() not implemented.");
+
+  // If the polygon is already a triangle, ignore.
+  Size degree = f->degree();
+  if (degree == 3) {
+    return;
+  }
+
+  // Find the starting halfedge and vertex
+  HalfedgeIter he_0 = f->halfedge();
+  VertexIter v_0 = he_0->vertex();
+
+  // Number of original edges that would compose a new triangle in the middle.
+  int num_mid_edges = degree - 4;
+  int num_new_edges = degree - 3;
+  int num_new_he = num_new_edges * 2;
+  int num_new_faces = degree - 2;
+
+  std::vector<EdgeIter> new_edges;
+  std::vector<HalfedgeIter> new_hes;
+  std::vector<HalfedgeIter> mid_hes;
+  std::vector<FaceIter> new_faces;
+
+  // Create new faces
+  for (int i = 0; i < num_new_faces; ++i) {
+    // Don't delete the old face so the iteration can go on.
+    if (i == 0) {
+      new_faces.push_back(f);
+      continue;
+    }
+    auto nf = newFace();
+    new_faces.push_back(nf);
+  }
+
+  // Setup the new edges and halfedges
+  for (int i = 0; i < num_new_edges; ++i) {
+    auto ne = newEdge();
+    auto nhe_0 = newHalfedge();
+    auto nhe_1 = newHalfedge();
+    new_edges.push_back(ne);
+    new_hes.push_back(nhe_0);
+    new_hes.push_back(nhe_1);
+    ne->halfedge() = nhe_0;
+
+    nhe_0->twin() = nhe_1;
+    // nhe_0->next() = ???;
+    // nhe_0->vertex() = ???;
+    nhe_0->edge() = ne;
+    nhe_0->face() = new_faces[i];
+
+    nhe_1->twin() = nhe_0;
+    // nhe_1->next() = ???;
+    nhe_1->vertex() = v_0; // All new edges from the original points
+    nhe_1->edge() = ne;
+    nhe_1->face() = new_faces[i + 1];
+
+    new_faces[i]->halfedge() = nhe_0;
+    if (i == num_new_edges - 1) {
+      new_faces[i+1]->halfedge() = nhe_1;
+    }
+  }
+
+  // std::cout << "create complete." << std::endl;
+
+  auto temphe = he_0->next()->next();
+  // Gather the original middle edges
+  for (int i = 0; i < num_mid_edges; ++i) {
+    mid_hes.push_back(temphe);
+    temphe = temphe->next();
+  }
+
+  // std::cout << "Gather complete." << std::endl;
+
+  // Handle the first and last traingle separately. The others are the same.
+  HalfedgeIter hit = he_0;
+  hit->face() = new_faces[0];
+  hit->next()->next() = new_hes[0];
+  hit->next()->face() = new_faces[0];
+  new_hes[0]->next() = hit;
+  new_hes[0]->vertex() = hit->next()->twin()->vertex();
+
+  (*(new_hes.end() - 1))->next() = temphe;
+  temphe->face() = *(new_faces.end() - 1);
+  temphe->next()->next() = (*(new_hes.end() - 1));
+  temphe->next()->face() = *(new_faces.end() - 1);
+
+  // std::cout << "Handle complete." << std::endl;
+
+  // Resolve all the connectivity and vertex
+  for (int i = 0; i < num_mid_edges; ++i) {
+    auto mid_he = mid_hes[i];
+    auto left_he = new_hes[2 * i + 1];
+    auto right_he = new_hes[2 * i + 2];
+    mid_he->next() = right_he;
+    right_he->next() = left_he;
+    left_he->next() = mid_he;
+    right_he->vertex() = mid_he->twin()->vertex();
+  }
+
+  // std::cout << "Adjust complete." << std::endl;
+
+  // showError("splitPolygon() not implemented.");
 }
 
 EdgeRecord::EdgeRecord(EdgeIter& _edge) : edge(_edge) {

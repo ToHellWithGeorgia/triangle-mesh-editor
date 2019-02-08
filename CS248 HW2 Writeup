@@ -19,4 +19,5 @@ The model can be found in ?????
 
 Extra credit tasks:
 
-eraseVertex()
+eraseVertex() 
+splitPolygon()
