@@ -913,6 +913,54 @@ void HalfedgeMesh::bevelFaceComputeNewPositions(
   //    position correponding to vertex i
   // }
   //
+  double scale_x = 1.0;
+  double scale_y = 2.0;
+  double t = -1.0;
+  // tangentialInset = abs(tangentialInset);
+  double actualInset = tangentialInset * scale_x;
+  double actualShift = -normalShift * scale_y;
+  Vector3D centroid;
+  Vector3D sum;
+  int N = originalVertexPositions.size();
+  for (auto& v : originalVertexPositions) {
+    sum += v;
+  }
+  centroid = sum / N;
+  Vector3D normal = newHalfedges[0]->twin()->next()->twin()->face()->normal();
+  // std::cout<<normal<<std::endl;
+  double distance;
+  for (int i = 0; i < N; i++) {
+    auto nv = newHalfedges[i]->vertex();
+    auto origNv = originalVertexPositions[i];
+    if (i == 0) {
+      distance = dot((nv->position - origNv), normal);
+      auto projNv = nv->position - distance * normal;
+      if (t < 0) {
+        if (centroid == projNv) {
+          t = 0;
+        }
+        else {
+          t = (projNv.x - centroid.x) / (origNv.x - centroid.x);
+          if (std::isnan(t)) {
+            t = (projNv.y - centroid.y) / (origNv.y - centroid.y);
+          }
+          if (std::isnan(t)) {
+            t = (projNv.z - centroid.z) / (origNv.z - centroid.z);
+          }
+        }
+      }
+      t += actualInset;
+      t = t >= 0.99 ? 0.99 : t;
+      t = t <= 0.01 ? 0.01 : t;
+      actualShift = (actualShift + distance >= 0) ? actualShift + distance : 0;
+    // std::cout<<t<<std::endl;
+      // std::cout<<"distance: "<<distance << " actual: "<< actualShift << std::endl;
+    }
+    nv->position = centroid * (1 - t) + origNv * t + actualShift * normal;
+    // nv->position = nv->position + ;
+    // std::cout<<nv->position<<std::endl;
+  }
+
 
 }
 
@@ -929,7 +977,6 @@ void HalfedgeMesh::bevelVertexComputeNewPositions(
   // and use the preceding and next vertex position from the original mesh
   // (in the orig array) to compute an offset vertex position.
 
-  // We cap the largest phsical offset to be 0.0099.
   double scale = 1;
   double t = -1.0;
   // tangentialInset = abs(tangentialInset);
@@ -938,23 +985,25 @@ void HalfedgeMesh::bevelVertexComputeNewPositions(
     auto tmp = (*he)->twin();
     auto nv = (*he)->vertex();
     auto origNv = tmp->vertex();
-    if (t < 0) {
-      if (originalVertexPosition == nv->position) {
-        t = 0;
-      }
-      else {
-        t = (nv->position.x - originalVertexPosition.x) / (origNv->position.x - originalVertexPosition.x);
-        if (std::isnan(t)) {
-          t = (nv->position.y - originalVertexPosition.y) / (origNv->position.y - originalVertexPosition.y);
+    if (he == newHalfedges.begin()){
+      if (t < 0) {
+        if (originalVertexPosition == nv->position) {
+          t = 0;
         }
-        if (std::isnan(t)) {
-          t = (nv->position.z - originalVertexPosition.z) / (origNv->position.z - originalVertexPosition.z);
+        else {
+          t = (nv->position.x - originalVertexPosition.x) / (origNv->position.x - originalVertexPosition.x);
+          if (std::isnan(t)) {
+            t = (nv->position.y - originalVertexPosition.y) / (origNv->position.y - originalVertexPosition.y);
+          }
+          if (std::isnan(t)) {
+            t = (nv->position.z - originalVertexPosition.z) / (origNv->position.z - originalVertexPosition.z);
+          }
         }
       }
+      t += actualInset;
+      t = t >= 0.99 ? 0.99 : t;
+      t = t <= 0.01 ? 0.01 : t;
     }
-    t += actualInset;
-    t = t >= 0.99 ? 0.99 : t;
-    t = t <= 0.01 ? 0.01 : t;
     // std::cout<<t<<std::endl;
     nv->position = originalVertexPosition * (1 - t) + origNv->position * t;
     // std::cout<<nv->position<<std::endl;
