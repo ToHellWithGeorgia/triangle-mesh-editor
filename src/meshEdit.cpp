@@ -791,8 +791,100 @@ FaceIter HalfedgeMesh::bevelFace(FaceIter f) {
   // HalfedgeMesh::bevelFaceComputeNewPositions (which you also have to
   // implement!)
 
-  showError("bevelFace() not implemented.");
-  return facesBegin();
+  // showError("bevelFace() not implemented.");
+  // return facesBegin();
+
+  auto he_0 = f->halfedge();
+  auto cent = f->centroid();
+  auto degree = f->degree();
+
+  std::vector<HalfedgeIter> old_inner_hes;
+  std::vector<VertexIter> old_vtcs;
+
+  std::vector<FaceIter> new_fcs;
+  std::vector<EdgeIter> new_inner_edges;
+  std:;vector<EdgeIter> new_outer_edges;
+  std::vector<HalfedgeIter> new_inner_hes;
+  std::vector<HalfedgeIter> new_outer_hes;
+  std::vector<VertexIter> new_vtcs;
+
+  // Gather all the required old inner halfedges and vertices
+  HalfedgeIter hit = he_0;
+  do {
+    old_inner_hes.push_back(hit);
+    old_vtcs.push_back(hit->vertex());
+    hit = hit->next();
+  } while (hit != he_0);
+
+  assert(old_inner_hes.size() == degree);
+
+  // Create new elements and align connectivity
+  FaceIter new_inner_face = newFace();
+  for (int i = 0; i < degree; ++i) {
+    new_fcs.push_back(newFace());
+    new_inner_edges.push_back(newEdge());
+    new_outer_edges.push_back(newEdge());
+    new_inner_hes.push_back(newHalfedge());
+    new_inner_hes.push_back(newHalfedge());
+    new_outer_hes.push_back(newHalfedge());
+    new_outer_hes.push_back(newHalfedge());
+    new_vtcs.push_back(newVertex());
+  }
+
+  for (int i = 0; i < degree; ++i) {
+    auto nohe_0 = new_outer_hes[i * 2];
+    auto nohe_1 = new_outer_hes[i * 2 + 1];
+    auto nihe_0 = new_inner_hes[i * 2];
+    auto nihe_1 = new_inner_hes[i * 2 + 1];
+    auto ohe = old_inner_hes[i];
+    auto ov = old_vtcs[i];
+    auto nf = new_fcs[i];
+    auto nie = new_inner_edges[i];
+    auto noe = new_outer_edges[i];
+    auto nv = new_vtcs[i];
+
+    // next twin vertex edge face
+    nohe_0->next() = nihe_1;
+    nohe_0->twin() = new_outer_hes[((i + 1) * 2 + 1) % (2 * degree)];
+    nohe_0->vertex() = old_vtcs[(i + 1) % degree];
+    nohe_0->edge() = new_outer_edges[(i + 1) % degree];
+    nohe_0->face() = nf;
+
+    nohe_1->next() = ohe;
+    nohe_1->twin() = i == 0 ? *(new_outer_hes.end() - 2)
+                     : new_outer_hes[(i - 1) * 2];
+    nohe_1->vertex() = nv;
+    nohe_1->edge() = noe;
+    nohe_1->face() = nf;
+
+    nihe_0->next() = new_inner_hes[((i + 1) * 2) % (2 * degree)];
+    nihe_0->twin() = nihe_1;
+    nihe_0->vertex() = nv;
+    nihe_0->edge() = nie;
+    nihe_0->face() = new_inner_face;
+
+    nihe_1->next() = nohe_1;
+    nihe_1->twin() = nihe_0;
+    nihe_1->vertex() = new_vtcs[(i + 1) % degree];
+    nihe_1->edge() = nie;
+    nihe_1->face() = nf;
+
+    ohe->next() = nohe_0;
+    // ohe->twin() = didn't change
+    // ohe->vertex() = didn't change
+    // ohe->edge() = didn't change
+    ohe->face() = nf;
+
+    nf->halfedge() = ohe;
+    noe->halfedge() = nohe_1;
+    nie->halfedge() = nihe_0;
+    nv->halfedge() = nihe_0;
+    nv->position = (ov->position + cent) / 2;
+  }
+  new_inner_face->halfedge() = new_inner_hes[0];
+
+  deleteFace(f);
+  return new_inner_face;
 }
 
 

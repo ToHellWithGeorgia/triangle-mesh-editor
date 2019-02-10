@@ -21,4 +21,4 @@ Extra credit tasks:
 
 eraseVertex() 
 splitPolygon()
-bevelVertex()
+bevelVertex() - When we click on the vertex in bevel mode, we create a new face at the middle point of each edge by default. Holding the mouse and drag left/right to decrease/increase the size of the bevel face.
