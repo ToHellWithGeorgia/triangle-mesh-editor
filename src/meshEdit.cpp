@@ -727,8 +727,8 @@ FaceIter HalfedgeMesh::bevelVertex(VertexIter v) {
     // Connectivity of the new vertex
     nv->halfedge() = nhe_0;
     // nv->position = old_hes[i * 2 + 1]->twin()->vertex()->position;
-    nv->position = v->position;
-    // nv->position = old_hes[i * 2 + 1]->edge()->centroid();
+    // nv->position = v->position;
+    nv->position = old_hes[i * 2 + 1]->edge()->centroid();
     ne->halfedge() = nhe_0;
 
     // Connectivity of the new halfedges
@@ -839,6 +839,28 @@ void HalfedgeMesh::bevelVertexComputeNewPositions(
   // and use the preceding and next vertex position from the original mesh
   // (in the orig array) to compute an offset vertex position.
 
+  // We cap the largest phsical offset to be 0.0099.
+  double scale = 1;
+  double t = -1.0;
+  // tangentialInset = abs(tangentialInset);
+  double actualInset = tangentialInset * scale;
+  for (auto he = newHalfedges.begin(); he != newHalfedges.end(); he++) {
+    auto tmp = (*he)->twin();
+    auto nv = (*he)->vertex();
+    auto origNv = tmp->vertex();
+    if (t < 0) {
+      if (originalVertexPosition == nv->position) {
+        t = 0;
+      }
+      else {
+        t = (nv->position.x - originalVertexPosition.x) / (origNv->position.x - originalVertexPosition.x);
+      }
+    }
+    t += actualInset;
+    t = t >= 0.99 ? 0.99 : t;
+    t = t <= 0.01 ? 0.01 : t;
+    nv->position = originalVertexPosition * (1 - t) + origNv->position * t;
+  }
 }
 
 void HalfedgeMesh::bevelEdgeComputeNewPositions(
