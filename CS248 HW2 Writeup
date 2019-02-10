@@ -21,3 +21,4 @@ Extra credit tasks:
 
 eraseVertex() 
 splitPolygon()
+bevelVertex()

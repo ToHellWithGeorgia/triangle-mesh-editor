@@ -687,8 +687,86 @@ FaceIter HalfedgeMesh::bevelVertex(VertexIter v) {
   // HalfedgeMesh::bevelVertexComputeNewPositions (which you also have to
   // implement!)
 
-  showError("bevelVertex() not implemented.");
-  return facesBegin();
+  // showError("bevelVertex() not implemented.");
+  // return facesBegin();
+  auto he_0 = v->halfedge();
+  Size degree = v->degree();
+
+  std::vector<HalfedgeIter> old_hes;
+  std::vector<FaceIter> old_fcs;
+
+  std::vector<HalfedgeIter> new_hes;
+  std::vector<EdgeIter> new_edges;
+  std::vector<VertexIter> new_vertices;
+
+  // Gather the original halfedges and faces.
+  //
+  auto hit = he_0;
+  do {
+    hit = hit->twin();
+    // Insert in the front so the order is aligned with
+    // inner face (counter-clockwise)
+    old_hes.insert(old_hes.begin(), hit->next());
+    old_hes.insert(old_hes.begin(), hit);
+    old_fcs.insert(old_fcs.begin(), hit->face());
+    hit = hit->next();
+  } while (hit != he_0);
+
+  assert(old_fcs.size() == degree);
+
+  // Allocate new faces, edges, vertices and halfedges
+  // The order of these are also counter-clockwise
+  FaceIter nf = newFace();
+  for (int i = 0; i < degree; ++i) {
+    // next twin vertex edge face
+    HalfedgeIter nhe_0 = newHalfedge();
+    HalfedgeIter nhe_1 = newHalfedge();
+    EdgeIter ne = newEdge();
+    VertexIter nv = newVertex();
+    
+    // Connectivity of the new vertex
+    nv->halfedge() = nhe_0;
+    nv->position = old_hes[i * 2 + 1]->twin()->vertex()->position;
+    // nv->position = old_hes[i * 2 + 1]->edge()->centroid();
+    ne->halfedge() = nhe_0;
+
+    // Connectivity of the new halfedges
+    // nhe_0 is inside the face, nhe_1 is outside
+    // nhe_0->next() = ???
+    nhe_0->twin() = nhe_1;
+    nhe_0->vertex() = nv;
+    nhe_0->edge() = ne;
+    nhe_0->face() = nf;
+
+    nhe_1->next() = old_hes[i * 2 + 1];
+    nhe_1->twin() = nhe_0;
+    // nhe_1->vertex() = next;
+    nhe_1->edge() = ne;
+    nhe_1->face() = old_fcs[i];
+
+    // Fix the outer faces
+    old_hes[i * 2]->next() = nhe_1;
+    old_hes[i * 2 + 1]->vertex() = nv;
+
+    new_hes.push_back(nhe_0);
+    new_hes.push_back(nhe_1);
+    new_edges.push_back(ne);
+    new_vertices.push_back(nv);
+
+    // Connect the missing part
+    //
+    if (i != 0) {
+      new_hes[(i - 1) * 2]->next() = nhe_0;
+      new_hes[(i - 1) * 2 + 1]->vertex() = nv;
+    }
+  }
+  // Resolve the last missing piece
+  (*(new_hes.end() - 2))->next() = new_hes[0];
+  (*(new_hes.end() - 1))->vertex() = new_vertices[0];
+  nf->halfedge() = new_hes[0];
+
+  deleteVertex(v);
+  return nf;
 }
 
 FaceIter HalfedgeMesh::bevelEdge(EdgeIter e) {
