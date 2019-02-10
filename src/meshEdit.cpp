@@ -5,8 +5,6 @@
 #include "error_dialog.h"
 #include <iostream>
 
-#include <iostream>
-
 namespace CS248 {
 
 VertexIter HalfedgeMesh::splitEdge(EdgeIter e0) {
@@ -854,12 +852,20 @@ void HalfedgeMesh::bevelVertexComputeNewPositions(
       }
       else {
         t = (nv->position.x - originalVertexPosition.x) / (origNv->position.x - originalVertexPosition.x);
+        if (std::isnan(t)) {
+          t = (nv->position.y - originalVertexPosition.y) / (origNv->position.y - originalVertexPosition.y);
+        }
+        if (std::isnan(t)) {
+          t = (nv->position.z - originalVertexPosition.z) / (origNv->position.z - originalVertexPosition.z);
+        }
       }
     }
     t += actualInset;
     t = t >= 0.99 ? 0.99 : t;
     t = t <= 0.01 ? 0.01 : t;
+    // std::cout<<t<<std::endl;
     nv->position = originalVertexPosition * (1 - t) + origNv->position * t;
+    // std::cout<<nv->position<<std::endl;
   }
 }
 
