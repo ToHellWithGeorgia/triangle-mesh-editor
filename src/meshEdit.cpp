@@ -726,7 +726,8 @@ FaceIter HalfedgeMesh::bevelVertex(VertexIter v) {
     
     // Connectivity of the new vertex
     nv->halfedge() = nhe_0;
-    nv->position = old_hes[i * 2 + 1]->twin()->vertex()->position;
+    // nv->position = old_hes[i * 2 + 1]->twin()->vertex()->position;
+    nv->position = v->position;
     // nv->position = old_hes[i * 2 + 1]->edge()->centroid();
     ne->halfedge() = nhe_0;
 
