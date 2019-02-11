@@ -15,10 +15,11 @@ buildSubdivisionVertexList()
 buildSubdivisionFaceList()
 upsample()
 
-The model can be found in ?????
+The model can be found in maomao.dae. 3d model of a a cat.
 
 Extra credit tasks:
 
 eraseVertex() 
-splitPolygon()
+splitPolygon() - for triangulate
 bevelVertex() - When we click on the vertex in bevel mode, we create a new face at the middle point of each edge by default. Holding the mouse and drag left/right to decrease/increase the size of the bevel face.
+bevelFace() - When we click on the face in bevel mode, we create a new face at the middle point of each edge by default. Holding the mouse and drag left/right to decrease/increase the size of the bevel face and drag up/down to increase/decrease the height (distance on the normal vector).
